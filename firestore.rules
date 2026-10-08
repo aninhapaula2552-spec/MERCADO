@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 1. User Profile Rules
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUser(incoming(), true);
+      allow update: if isOwner(userId) && isValidId(userId) && isValidUser(incoming(), false);
+      
+      function isValidUser(data, isCreate) {
+        let checkFields = (!data.keys().contains('currency') || data.currency is map)
+          && (!data.keys().contains('themeId') || (data.themeId is string && data.themeId.size() <= 50))
+          && (!data.keys().contains('suggestions') || (data.suggestions is string && data.suggestions.size() <= 5000))
+          && (!data.keys().contains('updatedAt') || data.updatedAt == request.time);
+          
+        return checkFields;
+      }
+    }
+
+    // 2. Grocery Lists Rules
+    match /lists/{listId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && isValidId(listId) && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() && isValidId(listId)
+        && incoming().userId == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && isValidList(incoming());
+        
+      allow update: if isSignedIn() && isValidId(listId)
+        && existing().userId == request.auth.uid
+        && incoming().userId == request.auth.uid
+        && incoming().updatedAt == request.time
+        && isValidList(incoming());
+        
+      allow delete: if isSignedIn() && isValidId(listId) && existing().userId == request.auth.uid;
+
+      function isValidList(data) {
+        return data.keys().hasAll(['name', 'status', 'userId', 'items'])
+          && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+          && data.status in ['Em andamento', 'Concluído']
+          && data.userId == request.auth.uid
+          && data.items is list && data.items.size() <= 200;
+      }
+    }
+
+    // 3. Gas Cylinders Rules
+    match /gas_cylinders/{cylinderId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && isValidId(cylinderId) && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() && isValidId(cylinderId)
+        && incoming().userId == request.auth.uid
+        && incoming().status in ['in_use', 'finished']
+        && incoming().price is number;
+        
+      allow update: if isSignedIn() && isValidId(cylinderId)
+        && existing().userId == request.auth.uid
+        && incoming().userId == request.auth.uid;
+        
+      allow delete: if isSignedIn() && isValidId(cylinderId) && existing().userId == request.auth.uid;
+    }
+  }
+}

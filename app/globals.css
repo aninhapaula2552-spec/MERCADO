@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #006e25;
+  --color-primary-container: #28a745;
+  --color-secondary: #8b5000;
+  --color-secondary-container: #ff9800;
+  --color-tertiary: #695f00;
+  --color-tertiary-container: #bdad00;
+  
+  --font-sans: var(--font-sans);
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900;
+  }
+}
+
+@layer components {
+  .bento-card {
+    @apply bg-white p-5 rounded-2xl shadow-sm border border-slate-100 transition-all hover:shadow-md active:scale-[0.98];
+  }
+  
+  .bottom-nav-item {
+    @apply flex flex-col items-center justify-center gap-1 transition-all active:scale-90;
+  }
+  
+  .badge {
+    @apply text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  header, nav, footer, .no-print, button:not(.print-btn), [role="dialog"]:not(.print-modal) {
+    display: none !important;
+  }
+  
+  .print-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

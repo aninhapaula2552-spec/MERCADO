@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User preferences and settings",
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "object",
+          "description": "Selected currency configuration"
+        },
+        "themeId": {
+          "type": "string",
+          "description": "ID of the selected theme color"
+        },
+        "suggestions": {
+          "type": "string",
+          "description": "Anotações de melhorias"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["currency", "themeId"]
+    },
+    "ListItem": {
+      "title": "ListItem",
+      "description": "An item in the grocery list",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "quantity": { "type": "number" },
+        "checked": { "type": "boolean" },
+        "weight": { "type": "string" },
+        "wholesalePrice": { "type": "number" },
+        "minWholesaleQty": { "type": "number" }
+      }
+    },
+    "GroceryList": {
+      "title": "GroceryList",
+      "description": "A shopping list document",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["Em andamento", "Concluído"] },
+        "icon": { "type": "string" },
+        "color": { "type": "string" },
+        "items": { 
+          "type": "array",
+          "items": { "$ref": "#/entities/ListItem" }
+        },
+        "budgetLimit": { "type": "number" },
+        "completedAt": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "status", "userId", "items"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User preferences and metadata"
+    },
+    "/lists/{listId}": {
+      "schema": "GroceryList",
+      "description": "Grocery lists created by users"
+    }
+  }
+}

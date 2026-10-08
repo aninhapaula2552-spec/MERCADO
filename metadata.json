@@ -1,0 +1,8 @@
+{
+  "name": "Mercado Fresh",
+  "description": "Organize suas compras e economize com facilidade no Mercado Fresh.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
